@@ -15,6 +15,7 @@ use color::*;
 use backend_sdl2::*;
 
 use sdl2::pixels;
+use sdl2::rect::*;
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
 
@@ -85,8 +86,8 @@ impl GuiRegion {
 					let left_color = blend_colors(self.color, left_color, 0.5f32);
 					let right_color = blend_colors(self.color, right_color, 0.5f32);
 					
-					let left_child = GuiRegion::new(self.left_bound, split_x, self.bottom_bound, self.top_bound, left_color);
-					let right_child = GuiRegion::new(split_x, self.right_bound, self.bottom_bound, self.top_bound, right_color);
+					let left_child = GuiRegion::new(left_child_left, split_x, self.bottom_bound, self.top_bound, left_color);
+					let right_child = GuiRegion::new(split_x, right_child_right, self.bottom_bound, self.top_bound, right_color);
 					
 					self.child_regions = Some(vec![left_child, right_child]);
 				}
@@ -96,7 +97,7 @@ impl GuiRegion {
 				if x > 0.0f32 && x <= (self.right_bound - self.left_bound) {
 					let absolute_x = self.left_bound + x;
 					for i in 0..children.len() {
-						if children[i].left_bound < absolute_x && children[i].right_bound > x {
+						if children[i].left_bound < absolute_x && children[i].right_bound > absolute_x {
 							let child_relative_x = absolute_x - children[i].left_bound;
 							
 							let left_color = blend_colors(self.color, left_color, 0.5f32);
@@ -114,15 +115,15 @@ impl GuiRegion {
 		match &mut self.child_regions {
 			None => {
 				if y > 0.0f32 && y <= (self.bottom_bound - self.top_bound) {
-					let split_y = self.top_bound + y;
+					let split_y = self.bottom_bound - y;
 					let top_child_top = self.top_bound;
 					let bottom_child_bottom = self.bottom_bound;
 					
 					let top_color = blend_colors(self.color, top_color, 0.5f32);
 					let bottom_color = blend_colors(self.color, bottom_color, 0.5f32);
 					
-					let top_child = GuiRegion::new(self.left_bound, self.right_bound, split_y, self.top_bound, top_color);
-					let bottom_child = GuiRegion::new(self.left_bound, self.right_bound, self.bottom_bound, split_y, bottom_color);
+					let top_child = GuiRegion::new(self.left_bound, self.right_bound, split_y, top_child_top, top_color);
+					let bottom_child = GuiRegion::new(self.left_bound, self.right_bound, bottom_child_bottom, split_y, bottom_color);
 					
 					self.child_regions = Some(vec![top_child, bottom_child]);
 				}
@@ -132,11 +133,11 @@ impl GuiRegion {
 				if y > 0.0f32 && y <= (self.bottom_bound - self.top_bound) {
 					let absolute_y = self.top_bound + y;
 					for i in 0..children.len() {
-						if children[i].top_bound < absolute_y && children[i].bottom_bound > y {
+						if children[i].top_bound < absolute_y && children[i].bottom_bound > absolute_y {
 							let child_relative_y = absolute_y - children[i].top_bound;
 							
 							let top_color = blend_colors(self.color, top_color, 0.5f32);
-						let bottom_color = blend_colors(self.color, bottom_color, 0.5f32);
+							let bottom_color = blend_colors(self.color, bottom_color, 0.5f32);
 					
 							children[i].split_at_relative_y(child_relative_y, top_color, bottom_color);
 						}
@@ -165,10 +166,10 @@ impl GuiRegion {
 					let bottom_left_color = blend_colors(self.color, bottom_left_color, 0.5f32);
 					let bottom_right_color = blend_colors(self.color, bottom_right_color, 0.5f32);
 					
-					let top_left_child = GuiRegion::new(self.left_bound, split_x, split_y, self.top_bound, top_left_color);
-					let top_right_child = GuiRegion::new(split_x, self.right_bound, split_y, self.top_bound, top_right_color);
-					let bottom_left_child = GuiRegion::new(self.left_bound, split_x, self.bottom_bound, split_y, bottom_left_color);
-					let bottom_right_child = GuiRegion::new(split_x, self.right_bound, self.bottom_bound, split_y, bottom_right_color);
+					let top_left_child = GuiRegion::new(left_child_left, split_x, split_y, top_child_top, top_left_color);
+					let top_right_child = GuiRegion::new(split_x, right_child_right, split_y, top_child_top, top_right_color);
+					let bottom_left_child = GuiRegion::new(left_child_left, split_x, bottom_child_bottom, split_y, bottom_left_color);
+					let bottom_right_child = GuiRegion::new(split_x, right_child_right, bottom_child_bottom, split_y, bottom_right_color);
 					
 					self.child_regions = Some(vec![top_left_child, top_right_child, bottom_left_child, bottom_right_child]);
 				}
@@ -181,8 +182,9 @@ impl GuiRegion {
 					let absolute_x = self.left_bound + x;
 					let absolute_y = self.top_bound + y;
 					for i in 0..children.len() {
-						if children[i].left_bound < absolute_x && children[i].right_bound > x && 
-						   children[i].top_bound < absolute_y && children[i].bottom_bound > y 
+
+						if children[i].left_bound < absolute_x && children[i].right_bound > absolute_x && 
+						   children[i].top_bound < absolute_y && children[i].bottom_bound > absolute_y 
 						{
 							let child_relative_x = absolute_x - children[i].left_bound;
 							let child_relative_y = absolute_y - children[i].top_bound;
@@ -203,6 +205,34 @@ impl GuiRegion {
 	
 }
 
+fn region_to_colored_rect(region: &GuiRegion) -> (Rect, pixels::Color) {
+	let width = region.right_bound - region.left_bound;
+	let height = region.bottom_bound - region.top_bound;
+	let rect = Rect::new(region.left_bound as i32, region.top_bound as i32, width as u32, height as u32);
+	(rect, region.color)
+}
+
+fn draw_region<'a, T: sdl2::render::RenderTarget>(canvas: &mut sdl2::render::Canvas<T>, 
+												  region: &'a GuiRegion, 
+												  border_color: sdl2::pixels::Color, 
+												  border_size: u32)
+{
+	let region_rect = region_to_colored_rect(region);
+	let next_border_color = region_rect.1;
+	draw_bordered_filled_rect(canvas, region_rect.0, border_size, region_rect.1, border_color);
+	
+
+	match &region.child_regions {
+		Some(children) => {
+			for i in 0..children.len() {
+				let next_border_size = if border_size > 1 { border_size / 2 } else { border_size };
+				draw_region(canvas, &children[i], next_border_color, next_border_size);
+			}
+		},
+		None => {}
+	}
+}
+
 fn main() {
 
     let sdl_context = sdl2::init().unwrap();
@@ -221,13 +251,21 @@ fn main() {
 	
 	let mut color_idx: usize = 0;
 	let colors = [pixels::Color::WHITE, pixels::Color::BLACK, pixels::Color::RED, pixels::Color::GREEN, pixels::Color::BLUE, pixels::Color::GRAY, pixels::Color::CYAN, pixels::Color::YELLOW, pixels::Color::MAGENTA];
-	let next_color = || { let col = colors[color_idx]; color_idx = (color_idx + 1) % colors.len(); return col; };
+	let mut next_color = || { let col = colors[color_idx]; color_idx = (color_idx + 1) % colors.len(); return col; };
+
+	let mut window_region = GuiRegion::from_rect(0.0f32, 0.0f32, 800.0f32, 600.0f32, next_color());
+	window_region.split_at_relative_x(400.0f32, next_color(), next_color());
+	window_region.split_at_relative_y(200.0f32, next_color(), next_color());
+	window_region.split_at_relative_point(200.0f32, 200.0f32, next_color(), next_color(), next_color(), next_color());
+	window_region.split_at_relative_point(600.0f32, 500.0f32, next_color(), next_color(), next_color(), next_color());
 
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     'running: loop {
         canvas.set_draw_color(pixels::Color::RGB(232, 230, 224));
         canvas.clear();
+
+        draw_region(&mut canvas, &window_region, pixels::Color::RGB(232, 230, 224), 32);
 
         for event in event_pump.poll_iter() {
             match event {

@@ -17,10 +17,14 @@ pub fn draw_bordered_filled_rect<T: RenderTarget>(canvas: &mut Canvas<T>, rect: 
                                 rect.y() - (border as i32) / 2,
                                 rect.width() + border,
                                 rect.height() + border);
+
+    let adjusted_width = if rect.width() > border { rect.width() - border } else { 1 };
+    let adjusted_height = if rect.height() > border { rect.height() - border } else { 1 };
+
 	let adjusted_rect = Rect::new(rect.x() + (border as i32) / 2,
 								  rect.y() + (border as i32) / 2,
-								  rect.width() - border,
-								  rect.height() - border);
+								  adjusted_width,
+								  adjusted_height);
     canvas.set_draw_color(border_color);
     canvas.fill_rect(border_rect).unwrap();
     canvas.set_draw_color(color);
