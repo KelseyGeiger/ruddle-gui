@@ -354,7 +354,7 @@ impl Color {
         }
     }
 
-    //This is an interative function if there is no direct converesion from one color format to another
+    //This is an iterative function if there is no direct conversion from one color format to another
     //Each step, if taken, converts to an intermediary format.
     //For example, HSV -> Lab will do HSV -> RGBf -> XYZ -> Lab
     pub fn convert(from: Color, to: ColorFormatName) -> Color {

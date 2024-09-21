@@ -22,6 +22,7 @@ pub enum VertAlign {
     BottomOffset(i32)
 }
 
+/// The position of the center of the bounds of a GUI element
 #[derive(Copy, Clone, Debug)]
 pub enum Position {
     Absolute((i32, i32)),
@@ -33,8 +34,8 @@ pub enum Position {
 #[derive(Copy, Clone, Debug)]
 pub enum Size {
     Absolute((u32, u32)), //direct value of width and height in pixels
-    Relative((i32, i32)), //how many fewer or more pixels than another element
-    //RelativeProportional((f32, f32)), //proportion of other element's width and height
+    Relative((i32, i32)), //how many fewer or more pixels than the parent element
+    //RelativeProportional((f32, f32)), //proportion of parent element's width and height
     //AspectWidth(f32, u32), //height calculated from aspect ratio and absolute width
     //AspectHeight(f32, u32), //width calculated from aspect ratio and absolute height
     //AspectFill(f32), //fill up parent bounds while maintaining aspect ratio

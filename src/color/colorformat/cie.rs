@@ -45,7 +45,7 @@ impl CieXyz {
                 let def = CieXyz::default();
 
                 /*  To keep ourselves tethered here, if we're going to use a reference white defined in
-                 *  terms of *another* reference white, let's arbitrarily suggest convertiing to the default
+                 *  terms of *another* reference white, let's arbitrarily suggest converting to the default
                  *  reference white- the one used by sRGB- before taking that new reference white
                  */
                 if triplet.0 == def.x && triplet.1 == def.y &&triplet.2 == def.z {
@@ -314,7 +314,6 @@ impl From<Srgb> for CieXyz {
             xyz[i] += row_sum;
         }
 
-        //Assuming that this is linearized sRGB, which is pretty likely for most purposes
         let ref_xyz = CieXyz::new(0.95047f32, 1.0f32, 1.08883f32);
         CieXyz::new(xyz[0], xyz[1], xyz[2]).with_reference_white(ref_xyz)
     }
@@ -342,7 +341,6 @@ impl From<SrgbF> for CieXyz {
             xyz[i] += row_sum;
         }
 
-        //Assuming that this is linearized sRGB, which is pretty likely for most purposes
         let ref_xyz = CieXyz::new(0.95047f32, 1.0f32, 1.08883f32);
         CieXyz::new(xyz[0], xyz[1], xyz[2]).with_reference_white(ref_xyz)
     }
