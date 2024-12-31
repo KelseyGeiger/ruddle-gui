@@ -160,10 +160,7 @@ impl CieXyz {
             Some(triplet) => {
                 let def = CieXyz::default();
 
-                /*  To keep ourselves tethered here, if we're going to use a reference white defined in
-                 *  terms of *another* reference white, let's arbitrarily suggest convertiing to the default
-                 *  reference white- the one used by sRGB- before taking that new reference white
-                 */
+                // If using a reference white with its own reference white, convert to the sRGB reference white first
                 if triplet.0 == def.x && triplet.1 == def.y &&triplet.2 == def.z {
                     *self = CieXyz::chromatic_adaptation(*self, dest_ref_white);
                 } else {
